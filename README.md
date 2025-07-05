@@ -1,152 +1,191 @@
-# MCP Audio Server
+# MCP Audio Server 🔊
 
-一个基于MCP (Model Context Protocol) 的音频服务器，允许AI模型通过系统音频播放器发出声音。
+*[English](README.md) | [中文](README_CN.md)*
 
-## 功能特性
+A powerful Model Context Protocol (MCP) server that provides text-to-speech and audio playback capabilities for Claude Desktop and other MCP clients.
 
-- **文本转语音 (TTS)**: 将文本转换为语音并播放
-- **音频文件播放**: 播放各种格式的音频文件
-- **音量控制**: 调整播放音量
-- **播放控制**: 停止当前播放
-- **状态查询**: 获取音频系统状态
+## ✨ Features
 
-## 安装依赖
+- **🗣️ Text-to-Speech**: Convert text to speech using system TTS with customizable rate and volume
+- **🎵 Audio File Playback**: Play various audio formats (WAV, MP3, OGG, etc.)
+- **⏹️ Audio Control**: Stop playback and get real-time audio status
+- **🔌 MCP Compliant**: Fully compatible with Claude Desktop and MCP specification 2024-11-05
+- **🛡️ Error Handling**: Robust error handling and validation
+- **📊 Status Monitoring**: Real-time audio system status and playback information
 
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.8+
+- Claude Desktop (for MCP integration)
+- System audio capabilities
+
+### Installation
+
+1. **Clone the repository:**
+```bash
+git clone https://github.com/yourusername/mcp-audio-server.git
+cd mcp-audio-server
+```
+
+2. **Install dependencies:**
 ```bash
 pip install -r requirements.txt
 ```
 
-## 使用方法
-
-### 启动服务器
-
-```bash
-python audio_server.py
-```
-
-### 可用工具
-
-#### 1. speak_text
-将文本转换为语音并播放
-
-**参数:**
-- `text` (必需): 要转换为语音的文本
-- `rate` (可选): 语音速度 (50-300 词/分钟，默认: 150)
-- `volume` (可选): 音量级别 (0.0-1.0，默认: 0.8)
-
-**示例:**
-```json
-{
-  "text": "Hello, this is a test message",
-  "rate": 150,
-  "volume": 0.8
-}
-```
-
-#### 2. play_audio_file
-播放音频文件
-
-**参数:**
-- `file_path` (必需): 音频文件路径
-- `volume` (可选): 音量级别 (0.0-1.0)
-
-**示例:**
-```json
-{
-  "file_path": "/path/to/audio/file.mp3",
-  "volume": 0.7
-}
-```
-
-#### 3. stop_audio
-停止当前音频播放
-
-**参数:** 无
-
-#### 4. get_audio_status
-获取音频系统状态
-
-**参数:** 无
-
-**返回示例:**
-```json
-{
-  "success": true,
-  "status": {
-    "tts_available": true,
-    "pygame_available": true,
-    "music_playing": false
-  }
-}
-```
-
-## 支持的音频格式
-
-- MP3
-- WAV
-- OGG
-- FLAC
-- 其他pygame支持的格式
-
-## 系统要求
-
-- Python 3.8+
-- 系统音频设备
-- 支持的操作系统: Windows, macOS, Linux
-
-## 配置MCP客户端
-
-要在MCP客户端中使用此服务器，请在配置文件中添加：
-
+3. **Configure Claude Desktop:**
+Add to your `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
     "audio-server": {
-      "command": "python",
-      "args": ["/path/to/audio_server.py"]
+      "command": "/path/to/your/python",
+      "args": ["/path/to/mcp-audio-server/audio_server.py"]
     }
   }
 }
 ```
 
-## 故障排除
+4. **Restart Claude Desktop** and start using audio features!
 
-### 常见问题
+## 🛠️ Available Tools
 
-1. **TTS引擎初始化失败**
-   - 确保系统有可用的TTS引擎
-   - 在Windows上可能需要安装SAPI
-   - 在Linux上可能需要安装espeak
+| Tool | Description | Parameters |
+|------|-------------|------------|
+| `speak_text` | Convert text to speech and play it | `text` (required), `rate` (optional), `volume` (optional) |
+| `play_audio_file` | Play an audio file | `file_path` (required), `volume` (optional) |
+| `stop_audio` | Stop current audio playback | None |
+| `get_audio_status` | Get audio system status | None |
 
-2. **音频播放失败**
-   - 检查音频文件是否存在
-   - 确保音频文件格式受支持
-   - 检查系统音频设备是否正常工作
+## 📖 Usage Examples
 
-3. **权限问题**
-   - 确保Python有访问音频设备的权限
-   - 在某些系统上可能需要管理员权限
-
-## 开发
-
-### 添加新功能
-
-要添加新的音频功能，请：
-
-1. 在 `AudioPlayer` 类中添加新方法
-2. 在 `handle_list_tools()` 中注册新工具
-3. 在 `handle_call_tool()` 中添加处理逻辑
-
-### 测试
-
-```bash
-# 安装测试依赖
-pip install pytest pytest-asyncio
-
-# 运行测试
-pytest tests/
+### Text-to-Speech
+```
+"Please use speech to say 'Hello World!'"
 ```
 
-## 许可证
+### Play Audio File
+```
+"Play the audio file at /path/to/music.mp3"
+```
 
-MIT License
+### Stop Audio
+```
+"Stop the current audio playback"
+```
+
+### Check Status
+```
+"What's the current audio status?"
+```
+
+## 🧪 Testing
+
+Run the comprehensive test suite:
+```bash
+# Test all MCP methods
+python test_all_mcp_methods.py
+
+# Test Claude Desktop format compatibility
+python test_claude_desktop_format.py
+
+# Test audio functionality
+python test_audio_server.py
+
+# Interactive testing mode
+python audio_server.py --interactive
+```
+
+## 📁 Project Structure
+
+```
+mcp-audio-server/
+├── audio_server.py              # Main MCP server
+├── requirements.txt             # Python dependencies
+├── README.md                   # English documentation (default)
+├── README_CN.md                # Chinese documentation
+├── .gitignore                  # Git ignore rules
+├── tests/                      # Test files
+│   ├── test_*.py               # Various tests
+│   └── validate_*.py           # Validation scripts
+├── examples/                   # Configuration examples
+│   ├── claude_desktop_config.json
+│   └── other config files
+├── scripts/                    # Utility scripts
+│   ├── install_and_setup.sh
+│   └── other shell scripts
+└── docs/                       # Additional documentation
+    ├── INTEGRATION_GUIDE.md    # Integration guide
+    ├── USAGE_GUIDE.md          # Usage guide
+    └── FINAL_INTEGRATION_REPORT.md
+```
+
+## 🔧 Configuration
+
+### Claude Desktop Configuration
+
+The server integrates seamlessly with Claude Desktop. Make sure your configuration file is properly set up:
+
+**Location:** 
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+
+**Example configuration:**
+```json
+{
+  "mcpServers": {
+    "audio-server": {
+      "command": "/Users/yourusername/miniconda3/envs/mcp_agent/bin/python",
+      "args": ["/path/to/mcp-audio-server/audio_server.py"]
+    }
+  }
+}
+```
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Audio not playing**: Check system audio settings and permissions
+2. **TTS not working**: Ensure pyttsx3 is properly installed
+3. **MCP connection issues**: Verify Claude Desktop configuration path
+4. **Permission errors**: Check file permissions for audio files
+
+### Debug Mode
+
+Run in interactive mode for debugging:
+```bash
+python audio_server.py --interactive
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- Built with the Model Context Protocol (MCP)
+- Uses pyttsx3 for text-to-speech
+- Uses pygame for audio playback
+- Compatible with Claude Desktop
+
+## 📞 Support
+
+If you encounter any issues or have questions:
+1. Check the troubleshooting section
+2. Review the integration guide
+3. Open an issue on GitHub
+4. Check Claude Desktop documentation
+
+---
+
+**Made with ❤️ for the MCP community**
