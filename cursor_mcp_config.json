@@ -1,0 +1,14 @@
+{
+  "mcp": {
+    "servers": {
+      "audio-server": {
+        "command": "/Users/batchlions/miniconda3/envs/mcp_agent/bin/python",
+        "args": ["/Users/batchlions/Documents/augment-projects/MCPAgent/audio_server.py"],
+        "env": {
+          "PYTHONPATH": "/Users/batchlions/Documents/augment-projects/MCPAgent",
+          "PYGAME_HIDE_SUPPORT_PROMPT": "1"
+        }
+      }
+    }
+  }
+}

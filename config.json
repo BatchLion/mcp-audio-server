@@ -1,0 +1,23 @@
+{
+  "server": {
+    "name": "audio-server",
+    "version": "1.0.0",
+    "description": "MCP Audio Server for AI model audio playback"
+  },
+  "audio": {
+    "tts": {
+      "default_rate": 150,
+      "default_volume": 0.8,
+      "min_rate": 50,
+      "max_rate": 300
+    },
+    "playback": {
+      "default_volume": 0.7,
+      "supported_formats": ["mp3", "wav", "ogg", "flac"]
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  }
+}
