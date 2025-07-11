@@ -71,7 +71,7 @@ def test_all_mcp_methods():
                 "expected_key": "prompts"
             },
             {
-                "name": "tools/call",
+                "name": "tools/call (speak_text)",
                 "request": {
                     "jsonrpc": "2.0",
                     "id": 5,
@@ -79,6 +79,19 @@ def test_all_mcp_methods():
                     "params": {
                         "name": "speak_text",
                         "arguments": {"text": "Test message"}
+                    }
+                },
+                "expected_key": "content"
+            },
+            {
+                "name": "tools/call (list_voices)",
+                "request": {
+                    "jsonrpc": "2.0",
+                    "id": 6,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "list_voices",
+                        "arguments": {}
                     }
                 },
                 "expected_key": "content"
@@ -108,16 +121,19 @@ def test_all_mcp_methods():
                 if test["name"] == "tools/list":
                     tools = result.get("tools", [])
                     print(f"   Found {len(tools)} tools")
+                    if len(tools) != 5:
+                        print(f"   ❌ Expected 5 tools, but found {len(tools)}")
+                        all_passed = False
                 elif test["name"] == "resources/list":
                     resources = result.get("resources", [])
                     print(f"   Found {len(resources)} resources")
                 elif test["name"] == "prompts/list":
                     prompts = result.get("prompts", [])
                     print(f"   Found {len(prompts)} prompts")
-                elif test["name"] == "tools/call":
+                elif test["name"].startswith("tools/call"):
                     content = result.get("content", [])
                     if content and not result.get("isError", False):
-                        print(f"   Response: {content[0].get('text', '')}")
+                        print(f"   Response: {content[0].get('text', '')[:100]}...")
                     
             else:
                 print(f"❌ {test['name']} failed: {response}")

@@ -8,12 +8,15 @@ import logging
 import os
 import sys
 from typing import Any, Dict, Optional
+import re
+from io import BytesIO
 
 # Suppress pygame welcome message to avoid interfering with MCP JSON communication
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
 import pyttsx3
 import pygame
+from gtts import gTTS
 
 # Configure logging to stderr to avoid interfering with MCP JSON communication on stdout
 logging.basicConfig(
@@ -55,12 +58,45 @@ class AudioPlayer:
         except Exception as e:
             logger.error(f"Failed to initialize pygame mixer: {e}")
 
-    def speak_text(self, text: str, rate: Optional[int] = None, volume: Optional[float] = None) -> Dict[str, Any]:
+    def speak_text(self, text: str, rate: Optional[int] = None, volume: Optional[float] = None, voice_id: Optional[str] = None) -> Dict[str, Any]:
         """Convert text to speech and play it"""
+        # Simple check for Chinese characters
+        if re.search(r'[一-鿿]', text):
+            try:
+                # Use gTTS for Chinese text
+                if not self.pygame_initialized:
+                    return {"success": False, "error": "Pygame not initialized for gTTS playback"}
+                
+                tts = gTTS(text, lang='zh-cn')
+                fp = BytesIO()
+                tts.write_to_fp(fp)
+                fp.seek(0)
+
+                pygame.mixer.music.load(fp)
+                if volume is not None:
+                    pygame.mixer.music.set_volume(max(0.0, min(1.0, volume)))
+                pygame.mixer.music.play()
+                
+                # Wait for playback to finish
+                while pygame.mixer.music.get_busy():
+                    pygame.time.Clock().tick(10)
+
+                return {
+                    "success": True,
+                    "message": f"Successfully spoke Chinese text using gTTS: '{text[:50]}{'...' if len(text) > 50 else ''}'"
+                }
+            except Exception as e:
+                return {"success": False, "error": f"Failed to speak Chinese text with gTTS: {str(e)}"}
+
+        # Fallback to pyttsx3 for non-Chinese text
         if not self.tts_engine:
             return {"success": False, "error": "TTS engine not available"}
 
         try:
+            # Set custom voice if provided
+            if voice_id:
+                self.tts_engine.setProperty('voice', voice_id)
+
             # Set custom rate and volume if provided
             if rate is not None:
                 self.tts_engine.setProperty('rate', rate)
@@ -77,6 +113,25 @@ class AudioPlayer:
             }
         except Exception as e:
             return {"success": False, "error": f"Failed to speak text: {str(e)}"}
+
+    def list_voices(self) -> Dict[str, Any]:
+        """List available TTS voices"""
+        if not self.tts_engine:
+            return {"success": False, "error": "TTS engine not available"}
+        
+        try:
+            voices = self.tts_engine.getProperty('voices')
+            voice_list = []
+            for voice in voices:
+                voice_list.append({
+                    "id": voice.id,
+                    "name": voice.name,
+                    "lang": voice.languages,
+                    "gender": voice.gender
+                })
+            return {"success": True, "voices": voice_list}
+        except Exception as e:
+            return {"success": False, "error": f"Failed to list voices: {str(e)}"}
 
     def play_audio_file(self, file_path: str, volume: Optional[float] = None) -> Dict[str, Any]:
         """Play an audio file"""
@@ -141,7 +196,7 @@ class MCPAudioServer:
         self.tools = {
             "speak_text": {
                 "name": "speak_text",
-                "description": "Convert text to speech and play it through the system audio",
+                "description": "Convert text to speech and play it through the system audio. Supports multiple languages and voice selection (for non-Chinese text).",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
@@ -160,9 +215,22 @@ class MCPAudioServer:
                             "description": "Volume level (0.0 to 1.0, default: 0.8)",
                             "minimum": 0.0,
                             "maximum": 1.0
+                        },
+                        "voice_id": {
+                            "type": "string",
+                            "description": "The ID of the voice to use (for non-Chinese text). See list_voices() for available IDs."
                         }
                     },
                     "required": ["text"]
+                }
+            },
+            "list_voices": {
+                "name": "list_voices",
+                "description": "List available text-to-speech voices for non-Chinese languages.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {},
+                    "required": []
                 }
             },
             "play_audio_file": {
@@ -218,6 +286,7 @@ class MCPAudioServer:
                 text = arguments.get("text", "")
                 rate = arguments.get("rate")
                 volume = arguments.get("volume")
+                voice_id = arguments.get("voice_id")
 
                 if not text:
                     return {
@@ -225,7 +294,7 @@ class MCPAudioServer:
                         "isError": True
                     }
 
-                result = self.audio_player.speak_text(text, rate, volume)
+                result = self.audio_player.speak_text(text, rate, volume, voice_id)
                 if result.get("success"):
                     return {
                         "content": [{"type": "text", "text": result.get("message", "Speech completed successfully")}],
@@ -233,7 +302,25 @@ class MCPAudioServer:
                     }
                 else:
                     return {
-                        "content": [{"type": "text", "text": f"Error: {result.get('error', 'Unknown error')}"}],
+                        "content": [{"type": "text", "text": f"Error: {result.get("error", "Unknown error")}"}],
+                        "isError": True
+                    }
+            
+            elif name == "list_voices":
+                result = self.audio_player.list_voices()
+                if result.get("success"):
+                    voices = result.get("voices", [])
+                    # Format the output for better readability
+                    voice_text = "Available Voices:\n" + "\n".join(
+                        [f"- ID: {v["id"]}\n  Name: {v["name"]}\n  Lang: {v["lang"]}\n  Gender: {v["gender"]}" for v in voices]
+                    )
+                    return {
+                        "content": [{"type": "text", "text": voice_text}],
+                        "isError": False
+                    }
+                else:
+                    return {
+                        "content": [{"type": "text", "text": f"Error: {result.get("error", "Unknown error")}"}],
                         "isError": True
                     }
 

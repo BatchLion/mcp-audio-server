@@ -6,12 +6,15 @@ A powerful Model Context Protocol (MCP) server that provides text-to-speech and 
 
 ## ✨ Features
 
-- **🗣️ Text-to-Speech**: Convert text to speech using system TTS with customizable rate and volume
-- **🎵 Audio File Playback**: Play various audio formats (WAV, MP3, OGG, etc.)
-- **⏹️ Audio Control**: Stop playback and get real-time audio status
-- **🔌 MCP Compliant**: Fully compatible with Claude Desktop and MCP specification 2024-11-05
-- **🛡️ Error Handling**: Robust error handling and validation
-- **📊 Status Monitoring**: Real-time audio system status and playback information
+- **🗣️ High-Quality TTS**: 
+  - **Smart Language Detection**: Automatically uses Google's TTS for high-quality Chinese speech and falls back to the system's TTS for other languages.
+  - **Voice Selection**: For non-Chinese text, list and select from various system-installed voices.
+  - **Customizable Speech**: Adjust rate and volume for a tailored listening experience.
+- **🎵 Audio File Playback**: Play various audio formats (WAV, MP3, OGG, etc.).
+- **⏹️ Audio Control**: Stop playback and get real-time audio status.
+- **🔌 MCP Compliant**: Fully compatible with Claude Desktop and MCP specification 2024-11-05.
+- **🛡️ Error Handling**: Robust error handling and validation.
+- **📊 Status Monitoring**: Real-time audio system status and playback information.
 
 ## 🚀 Quick Start
 
@@ -53,17 +56,29 @@ Add to your `claude_desktop_config.json`:
 
 | Tool | Description | Parameters |
 |------|-------------|------------|
-| `speak_text` | Convert text to speech and play it | `text` (required), `rate` (optional), `volume` (optional) |
-| `play_audio_file` | Play an audio file | `file_path` (required), `volume` (optional) |
-| `stop_audio` | Stop current audio playback | None |
-| `get_audio_status` | Get audio system status | None |
+| `speak_text` | Convert text to speech. Automatically uses Google TTS for Chinese. | `text` (required), `rate` (optional), `volume` (optional), `voice_id` (optional, for non-Chinese) |
+| `list_voices` | List available TTS voices for non-Chinese languages. | None |
+| `play_audio_file` | Play an audio file. | `file_path` (required), `volume` (optional) |
+| `stop_audio` | Stop current audio playback. | None |
+| `get_audio_status` | Get audio system status. | None |
 
 ## 📖 Usage Examples
 
-### Text-to-Speech
+### Text-to-Speech (Chinese)
 ```
-"Please use speech to say 'Hello World!'"
+"请用语音说出 '你好，世界'"
 ```
+*This will automatically use Google TTS for a natural-sounding voice.*
+
+### Text-to-Speech (English, with a specific voice)
+1.  **First, list available voices:**
+    ```
+    "List all available voices"
+    ```
+2.  **Then, use a specific voice ID from the list:**
+    ```
+    "Use the voice with ID 'com.apple.speech.synthesis.voice.daniel' to say 'Hello, this is a test.'"
+    ```
 
 ### Play Audio File
 ```

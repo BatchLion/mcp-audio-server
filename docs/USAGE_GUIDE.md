@@ -26,35 +26,80 @@ python test_audio_server.py
 
 ## 🛠️ 可用工具
 
+本服务器提供了一系列工具，可通过MCP调用。
+
 ### speak_text
-将文本转换为语音并播放
+
+将文本转换为语音并播放。此工具足够智能，可以自动检测中文并使用 `gTTS` 提供高质量的发音。对于其他语言，它使用系统的 `pyttsx3` 引擎。
 
 **参数:**
-- `text` (必需): 要转换的文本
-- `rate` (可选): 语音速度 (50-300 词/分钟)
-- `volume` (可选): 音量 (0.0-1.0)
+- `text` (必需, `string`): 要转换为语音的文本。
+- `rate` (可选, `integer`): 语速 (每分钟词数，默认: 150)。
+- `volume` (可选, `float`): 音量 (0.0 到 1.0，默认: 0.8)。
+- `voice_id` (可选, `string`): **仅用于非中文文本**。用于指定朗读语音的ID。使用 `list_voices` 工具获取可用ID。
 
-**示例:**
+**示例 (中文):**
 ```json
 {
-  "text": "Hello World",
-  "rate": 150,
-  "volume": 0.8
+  "text": "你好，世界！",
+  "volume": 0.9
+}
+```
+
+**示例 (英文, 指定语音):**
+```json
+{
+  "text": "Hello world!",
+  "voice_id": "com.apple.speech.synthesis.voice.daniel"
+}
+```
+
+### list_voices
+
+列出系统上所有可用于 **非中文文本** 的TTS语音。
+
+**参数:** 无
+
+**返回示例:**
+```json
+{
+  "success": true,
+  "voices": [
+    {
+      "id": "com.apple.speech.synthesis.voice.daniel",
+      "name": "Daniel",
+      "lang": ["en_GB"],
+      "gender": "male"
+    },
+    {
+      "id": "com.apple.speech.synthesis.voice.samantha",
+      "name": "Samantha",
+      "lang": ["en_US"],
+      "gender": "female"
+    }
+  ]
 }
 ```
 
 ### play_audio_file
-播放音频文件
+
+播放一个音频文件。
 
 **参数:**
-- `file_path` (必需): 音频文件路径
-- `volume` (可选): 音量 (0.0-1.0)
+- `file_path` (必需, `string`): 要播放的音频文件的绝对路径。
+- `volume` (可选, `float`): 音量 (0.0 到 1.0)。
 
 ### stop_audio
-停止当前音频播放
+
+停止当前所有音频播放（包括TTS和文件播放）。
+
+**参数:** 无
 
 ### get_audio_status
-获取音频系统状态
+
+获取音频系统的当前状态。
+
+**参数:** 无
 
 ## 🔧 使用方式
 
